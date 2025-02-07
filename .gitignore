@@ -135,6 +135,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+test_tst_llm_conn/
+tst_llm_conn/
 
 # Spyder project settings
 .spyderproject

@@ -6,16 +6,16 @@ class TestOpenAiConnInfoCarrier(unittest.TestCase):
     def setUp(self):
         self.api_key = "test_api_key"
         self.model = "test_model"
-        self.messages = [{"role": "system", "content": "Hello, World!"}]
-        self.conn_info_carrier = OpenAiConnInfoCarrier(self.api_key, self.model, self.messages)
+        self.role = "system"
+        self.conn_info_carrier = OpenAiConnInfoCarrier(self.api_key, self.model, self.role)
 
     def test_initialization(self):
         self.assertEqual(self.conn_info_carrier._conn_params['openai_api_key'],
                          self.api_key)
         self.assertEqual(self.conn_info_carrier._conn_params['model'],
                          self.model)
-        self.assertEqual(self.conn_info_carrier._conn_params['messages'],
-                         self.messages)
+        self.assertEqual(self.conn_info_carrier._conn_params['role'],
+                         self.role)
 
 
 class TestGeminiConnInfoCarrier(unittest.TestCase):

@@ -2,10 +2,10 @@ import logging
 import sys
 from io import StringIO
 
-def setup_logger():
+def setup_logger(level: int = logging.DEBUG) -> tuple[logging.Logger, StringIO]:
     log_stream = StringIO()
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
 
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)

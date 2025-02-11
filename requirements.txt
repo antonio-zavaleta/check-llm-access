@@ -1,4 +1,5 @@
 annotated-types==0.7.0
+anthropic==0.45.2
 anyio==4.8.0
 attrs==25.1.0
 cachetools==5.5.1

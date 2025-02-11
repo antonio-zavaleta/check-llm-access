@@ -1,7 +1,5 @@
 from openai import OpenAI
 import google.generativeai as genai
-import requests
-import requests
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
 import os
@@ -13,14 +11,32 @@ load_dotenv('llm_api_params.env')
 logger = logging.getLogger(__name__)
 
 class ApiConnInfoCarrier(ABC):
+    """
+    Abstract base class that carries API connection information.
+    Attributes:
+        _conn_params (dict): A dictionary to store connection parameters.
+    """
     def __init__(self):
+        """
+        Initializes the ApiConnInfoCarrier with an empty dictionary for connection parameters.
+        """
         self._conn_params = {}
 
     @property
     def conn_params(self):
+        """
+        Returns the connection parameters.
+        """
         return self._conn_params
     
 class OpenAiConnInfoCarrier(ApiConnInfoCarrier):
+    """
+    OpenAiConnInfoCarrier is a class that carries connection information for OpenAI API.
+    Attributes:
+        openai_api_key (str): The API key for accessing OpenAI services.
+        model (str): The model to be used for OpenAI API requests.
+        role (str): The role associated with the API connection.
+    """
     def __init__(self, openai_api_key: str, model: str, role: str):
         super().__init__()
         self._conn_params['openai_api_key'] = openai_api_key
@@ -29,12 +45,28 @@ class OpenAiConnInfoCarrier(ApiConnInfoCarrier):
         
         
 class GeminiConnInfoCarrier(ApiConnInfoCarrier):
-    def __init__(self, gemini_api_key: str, model_name: str, content_type: str = "application/json"):
+    """
+    A class to carry connection information for the Gemini API.
+    Attributes:
+        gemini_api_key (str): The API key for accessing the Gemini API.
+        model_name (str): The name of the model to be used with the Gemini API.
+    """
+    def __init__(self, gemini_api_key: str, model_name: str):
         super().__init__()
         self._conn_params['gemini_api_key'] = gemini_api_key
         self._conn_params['model_name'] = model_name
         
 class LlmQuerier(ABC):
+    """
+    Abstract base class for querying language models (LLMs).
+    Attributes:
+        api_info_carrier (ApiConnInfoCarrier): An object containing API connection information.
+    Methods:
+        get_query_results(prompt: str):
+            Abstract method to get query results from the LLM.
+        get_lm_conn_obj(subclass_name: str) -> 'LlmQuerier':
+            Static method to get an instance of a subclass based on the provided subclass name.
+    """
     def __init__(self, api_info_carrier: ApiConnInfoCarrier):
         self.api_info_carrier = api_info_carrier
 
@@ -57,8 +89,7 @@ class LlmQuerier(ABC):
             elif subclass_name == "GeminiQuerier":
                 kwargs = {
                     "gemini_api_key":os.getenv("GEMINI_API_KEY"),
-                    "model_name":os.getenv("GEMINI_MODEL_NAME"),
-                    "content_type":os.getenv("GEMINI_CONTENT_TYPE")
+                    "model_name":os.getenv("GEMINI_MODEL_NAME")
                 }
                 conn_info_ds = GeminiConnInfoCarrier(**kwargs)
                 llm_query_obj = GeminiQuerier(conn_info_ds)
@@ -69,6 +100,10 @@ class LlmQuerier(ABC):
 
 
 class OpenAiQuerier(LlmQuerier):
+    """A class to interact with the OpenAI API to send prompts and retrieve responses.
+    Attributes:
+        api_info_carrier (OpenAiConnInfoCarrier): An object containing connection information for the OpenAI API.
+    """
     def __init__(self, api_info_carrier: OpenAiConnInfoCarrier=None):
         
         if not api_info_carrier:
@@ -94,6 +129,14 @@ class OpenAiQuerier(LlmQuerier):
         return chat_completion.choices[0].message.content
 
 class GeminiQuerier(LlmQuerier):
+    """
+    A class to query the Gemini generative model.
+    Attributes:
+        api_info_carrier (GeminiConnInfoCarrier): An object containing API connection information.
+    Methods:
+        get_query_results(query: str) -> str:
+            Queries the Gemini generative model with the provided query and returns the response text.
+    """ 
     def __init__(self, api_info_carrier: GeminiConnInfoCarrier):
         if not api_info_carrier:
             api_info_carrier = GeminiConnInfoCarrier(self.__class__.__name__)

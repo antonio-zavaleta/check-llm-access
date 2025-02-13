@@ -2,7 +2,7 @@ from src.setlogging import setup_logger
 from src.apiconn import (OpenAiConnInfoCarrier, GeminiConnInfoCarrier, ApiConnInfoCarrier, LlmQuerier)
 
 from dotenv import load_dotenv
-import os
+import pandas as pd
 import argparse
 import logging
 from ast import literal_eval
@@ -19,18 +19,23 @@ def main(clsnms: list[str] = None):
     
     logger.info(f'Query to execute:{query}')
     if clsnms:
+        ans_list = []
         logger.info("Processing class names.")
         for cls in clsnms:
             logger.info(f"Processing class name: {cls}")            
             lm_query_obj = LlmQuerier.get_lm_conn_obj(cls)
-            # logger.info(f"Conn Info Params: {lm_query_obj.api_info_carrier.conn_params}")
-            
             ans = lm_query_obj.get_query_results(query)
-            logger.info(f'Language Model Ans: {ans}')
-            
+            ans_list.append(ans)
     else:
         logger.error("No class names to process provided as input.")
         raise ValueError("No class names to process provided as input.")
+    
+    # Create a pandas dataframe to store the results
+    df = pd.DataFrame({
+        'Class Name': clsnms,
+        'Answer': ans_list
+    })
+    logger.info(f"Results DataFrame:\n{df}")
     
 #######################
 # Invoke main.py

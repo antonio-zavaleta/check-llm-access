@@ -5,6 +5,7 @@ from src.apiconn import GeminiConnInfoCarrier
 from src.apiconn import ClaudeInfoCarrier
 from src.apiconn import LlmQuerier
 from src.apiconn import LlamaInfoCarrier
+from src.apiconn import MistralInfoCarrier
 
 class TestOpenAiConnInfoCarrier(unittest.TestCase):
     def setUp(self):
@@ -64,7 +65,7 @@ class TestLlamaInfoCarrier(unittest.TestCase):
             llama_api_key=self.llama_api_key,
             model=self.model,
             role=self.role,
-            base_url=self.base_url,
+            hostname=self.base_url,
             max_tokens=self.max_tokens
         )
 
@@ -73,6 +74,23 @@ class TestLlamaInfoCarrier(unittest.TestCase):
         self.assertEqual(self.llama_info_carrier.conn_params['model'], self.model)
         self.assertEqual(self.llama_info_carrier.conn_params['role'], self.role)
         self.assertEqual(self.llama_info_carrier.conn_params['max_tokens'], self.max_tokens)
+
+class TestMistralInfoCarrier(unittest.TestCase):
+
+    def setUp(self):
+        self.api_key = "test_mistral_api_key"
+        self.model = "test_mistral_model"
+        self.role = "test_role"
+        self.mistral_info_carrier = MistralInfoCarrier(
+            mistral_api_key=self.api_key,
+            model=self.model,
+            role=self.role
+        )
+
+    def test_conn_params(self):
+        self.assertEqual(self.mistral_info_carrier.conn_params['mistral_api_key'], self.api_key)
+        self.assertEqual(self.mistral_info_carrier.conn_params['model'], self.model)
+        self.assertEqual(self.mistral_info_carrier.conn_params['role'], self.role)
 
 class TestLlmQuerier(unittest.TestCase):
     def test_get_lm_conn_obj_openai(self):
@@ -116,8 +134,17 @@ class TestLlmQuerier(unittest.TestCase):
         self.assertEqual(lm_query_obj.api_info_carrier.conn_params['llama_api_key'], 'test_llama_api_key')
         self.assertEqual(lm_query_obj.api_info_carrier.conn_params['model'], 'test_llama_model')
         self.assertEqual(lm_query_obj.api_info_carrier.conn_params['role'], 'test_llama_role')
-        self.assertEqual(lm_query_obj.api_info_carrier.conn_params['base_url'], 'https://llama.com')
         self.assertEqual(lm_query_obj.api_info_carrier.conn_params['max_tokens'], 1000)
+        
+    def test_get_lm_conn_obj_mistral(self):
+        os.environ['MISTRAL_API_KEY'] = 'test_mistral_api_key'
+        os.environ['MISTRAL_MODEL'] = 'test_mistral_model'
+        os.environ['MISTRAL_ROLE'] = 'test_mistral_role'
+        lm_query_obj = LlmQuerier.get_lm_conn_obj('MistralQuerier')
+        self.assertIsInstance(lm_query_obj.api_info_carrier, MistralInfoCarrier)
+        self.assertEqual(lm_query_obj.api_info_carrier.conn_params['mistral_api_key'], 'test_mistral_api_key')
+        self.assertEqual(lm_query_obj.api_info_carrier.conn_params['model'], 'test_mistral_model')
+        self.assertEqual(lm_query_obj.api_info_carrier.conn_params['role'], 'test_mistral_role')
     
     def test_get_lm_conn_obj_invalid(self):
         with self.assertRaises(ValueError):
